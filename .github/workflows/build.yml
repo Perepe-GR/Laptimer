@@ -14,8 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Descomprimir proyecto
-        run: unzip -q laptimer-v2.zip
+      - name: Descomprimir el zip más reciente
+        run: |
+          ZIP=$(ls *.zip | sort -V | tail -n1)
+          echo "Usando $ZIP"
+          mkdir proyecto
+          unzip -q "$ZIP" -d proyecto
+          echo "PROJ=$(ls -d proyecto/*/ | head -n1)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v4
         with:
@@ -27,16 +32,16 @@ jobs:
           gradle-version: "8.7"
 
       - name: Compilar APK
-        working-directory: laptimer-v2
+        working-directory: ${{ env.PROJ }}
         run: gradle assembleDebug --no-daemon
 
       - name: Copiar APK
-        run: cp laptimer-v2/app/build/outputs/apk/debug/app-debug.apk laptimer-v2.apk
+        run: cp "${{ env.PROJ }}app/build/outputs/apk/debug/app-debug.apk" laptimer.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: laptimer-apk
-          path: laptimer-v2.apk
+          path: laptimer.apk
 
       - name: Publicar en Releases
         uses: softprops/action-gh-release@v2
@@ -44,4 +49,4 @@ jobs:
           tag_name: apk-latest
           name: APK más reciente
           prerelease: true
-          files: laptimer-v2.apk
+          files: laptimer.apk
