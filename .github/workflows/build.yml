@@ -14,10 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Descomprimir el zip más reciente
+      - name: Descomprimir el zip más reciente y detectar versión
         run: |
           ZIP=$(ls *.zip | sort -V | tail -n1)
           echo "Usando $ZIP"
+          
+          # Extraurem la versió del nom del zip (ex: de laptimer-v10.zip obtenim v10)
+          VERSION=$(echo "$ZIP" | sed -E 's/laptimer-(.*)\.zip/\1/')
+          echo "Versió detectada: $VERSION"
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          
           mkdir proyecto
           unzip -q "$ZIP" -d proyecto
           echo "PROJ=$(ls -d proyecto/*/ | head -n1)" >> "$GITHUB_ENV"
@@ -35,18 +41,21 @@ jobs:
         working-directory: ${{ env.PROJ }}
         run: gradle assembleDebug --no-daemon
 
-      - name: Copiar APK
-        run: cp "${{ env.PROJ }}app/build/outputs/apk/debug/app-debug.apk" laptimer.apk
+      - name: Copiar i renombrar APK amb la versió
+        run: |
+          APK_NAME="laptimer-${{ env.APP_VERSION }}.apk"
+          cp "${{ env.PROJ }}app/build/outputs/apk/debug/app-debug.apk" "$APK_NAME"
+          echo "APK renombrat a: $APK_NAME"
 
       - uses: actions/upload-artifact@v4
         with:
           name: laptimer-apk
-          path: laptimer.apk
+          path: laptimer-${{ env.APP_VERSION }}.apk
 
       - name: Publicar en Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: apk-latest
-          name: APK más reciente
+          tag_name: apk-${{ env.APP_VERSION }}
+          name: APK ${{ env.APP_VERSION }}
           prerelease: true
-          files: laptimer.apk
+          files: laptimer-${{ env.APP_VERSION }}.apk
