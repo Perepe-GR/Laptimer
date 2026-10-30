@@ -33,10 +33,17 @@ jobs:
           java-version: "17"
 
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
 
-      - name: Compilar APK
+      - name: Compilar APK (con generación automática de wrapper si falta)
         working-directory: ${{ env.PROJ }}
         run: |
+          # Si falta el jar del wrapper, lo generamos al vuelo
+          if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "Generando gradle-wrapper.jar faltante..."
+            gradle wrapper --gradle-version 8.7
+          fi
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
