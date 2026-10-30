@@ -25,9 +25,8 @@ jobs:
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
           
           mkdir proyecto
-          # Extracción segura con Python para evitar errores de rutas de Windows
           python3 -c "import zipfile; zipfile.ZipFile('$ZIP').extractall('proyecto')"
-          echo "PROJ=$(ls -d proyecto/*/ | head -n1)" >> "$GITHUB_ENV"
+          echo "PROJ=proyecto/" >> $GITHUB_ENV
 
       - uses: actions/setup-java@v4
         with:
