@@ -19,13 +19,14 @@ jobs:
           ZIP=$(ls *.zip | sort -V | tail -n1)
           echo "Usando $ZIP"
           
-          # Extraurem la versió del nom del zip (ex: de laptimer-v10.zip obtenim v10)
+          # Extriurem la versió del nom del zip (ex: de laptimer-v10.zip obtenim v10)
           VERSION=$(echo "$ZIP" | sed -E 's/laptimer-(.*)\.zip/\1/')
           echo "Versió detectada: $VERSION"
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
           
           mkdir proyecto
-          unzip -q "$ZIP" -d proyecto
+          # Extracción segura con Python para evitar errores de rutas de Windows
+          python3 -c "import zipfile; zipfile.ZipFile('$ZIP').extractall('proyecto')"
           echo "PROJ=$(ls -d proyecto/*/ | head -n1)" >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v4
