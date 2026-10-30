@@ -19,7 +19,6 @@ jobs:
           ZIP=$(ls *.zip | sort -V | tail -n1)
           echo "Usando $ZIP"
           
-          # Extriurem la versió del nom del zip (ex: de laptimer-v10.zip obtenim v10)
           VERSION=$(echo "$ZIP" | sed -E 's/laptimer-(.*)\.zip/\1/')
           echo "Versió detectada: $VERSION"
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
@@ -34,12 +33,12 @@ jobs:
           java-version: "17"
 
       - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.7"
 
       - name: Compilar APK
         working-directory: ${{ env.PROJ }}
-        run: gradle assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Copiar i renombrar APK amb la versió
         run: |
